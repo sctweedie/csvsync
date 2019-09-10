@@ -1,0 +1,3 @@
+* Delete trailing lines in gsheet if we paste in fewer lines than were
+  already there.
+
