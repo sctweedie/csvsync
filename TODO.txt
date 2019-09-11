@@ -1,3 +1,1 @@
-* Delete trailing lines in gsheet if we paste in fewer lines than were
-  already there.
-
+* Handle manual resolution of a conflict during "sync" operations

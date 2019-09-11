@@ -1,9 +1,11 @@
 from __future__ import print_function
 
 from . import config
+from .lib import eprint
 
 import pickle
 import os.path
+import io
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
@@ -100,7 +102,22 @@ class Sheet:
         with open(filename, 'rt') as csvfile:
             csvContents = csvfile.read()
 
+        # Count the lines in the CSV (use the proper CSV parser to
+        # handle things like newlines embedded in a quoted string).
+        #
+        # We need a robust line count to make sure we clear the
+        # spreadsheet of any additional trailing lines that are no
+        # longer needed.
+
+        csvreader = csv.reader(io.StringIO(csvContents))
+        lines = 0
+        for row in csvreader:
+            lines += 1
+
+        eprint ('Uploading %d lines' % lines)
+
         body = {
+            # Use pasteData to insert the new data
             'requests': [{
                 'pasteData': {
                     "coordinate": {
@@ -111,6 +128,17 @@ class Sheet:
                     "data": csvContents,
                     "type": 'PASTE_NORMAL',
                     "delimiter": ',',
+                }
+            },
+            # and use updateCells with userEnteredValue and no value
+            # to clear the remaining rows of the sheet.
+            {
+                'updateCells': {
+                    'range': {
+                        'sheetId': self.sheet_id,
+                        'startRowIndex': lines,
+                    },
+                    'fields': 'userEnteredValue'
                 }
             }]
         }
