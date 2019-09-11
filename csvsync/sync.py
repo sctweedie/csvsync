@@ -4,6 +4,7 @@ from .lib import eprint
 import os
 import configparser
 import shutil
+import filecmp
 
 import csvdiff3
 
@@ -220,6 +221,15 @@ class Sync:
         os.rename(self.merge_filename, self.save_filename)
         shutil.copy(self.save_filename, self.fileconfig['filename'])
 
-        self.upload()
+        # If the download file still exists (ie. we didn't pause for a
+        # manual conflict resolution), and the reconciled file is the
+        # same as the download, then we don't need to re-upload.
+
+        if os.path.exists(self.download_filename) and \
+           filecmp.cmp(self.download_filename, self.save_filename,
+                       shallow = False):
+            eprint('File not changed, skipping re-upload')
+        else:
+            self.upload()
 
         self.status = 'READY'
