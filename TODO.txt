@@ -1,1 +1,7 @@
 * Handle manual resolution of a conflict during "sync" operations
+
+* Handle the absence of a sheet name in a file config.
+
+  Should just default to using the first sheet in the spreadsheet
+  (ie. index 0).
+
