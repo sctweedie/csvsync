@@ -91,7 +91,7 @@ class Sheet:
                 max_len = len(row)
 
         with open(filename, 'wt') as csvfile:
-            csvwriter = csv.writer(csvfile)
+            csvwriter = csv.writer(csvfile, lineterminator = os.linesep)
             for row in values:
                 if pad_lines:
                     while len(row) < max_len:
