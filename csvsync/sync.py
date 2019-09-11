@@ -135,6 +135,7 @@ class Sync:
 
         self.download()
         os.rename(self.download_filename, self.save_filename)
+        shutil.copy(self.save_filename, self.fileconfig['filename'])
 
     def push(self):
         status = self.status
