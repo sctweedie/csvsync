@@ -118,14 +118,14 @@ class Sheet:
             # Use pasteData to insert the new data
             'requests': [{
                 'pasteData': {
-                    "coordinate": {
-                        "sheetId": self.sheet_id,
-                        "rowIndex": "0",  # adapt this if you need different positioning
-                        "columnIndex": "0", # adapt this if you need different positioning
+                    'coordinate': {
+                        'sheetId': self.sheet_id,
+                        'rowIndex': '0',
+                        'columnIndex': '0',
                     },
-                    "data": csvContents,
-                    "type": 'PASTE_NORMAL',
-                    "delimiter": ',',
+                    'data': csvContents,
+                    'type': 'PASTE_VALUES',
+                    'delimiter': ',',
                 }
             },
             # and use updateCells with userEnteredValue and no value
