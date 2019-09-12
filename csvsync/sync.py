@@ -229,7 +229,7 @@ class Sync:
         if os.path.exists(self.download_filename) and \
            filecmp.cmp(self.download_filename, self.save_filename,
                        shallow = False):
-            eprint('File not changed, skipping re-upload')
+            eprint('No changes pending against remote file, skipping re-upload')
         else:
             self.upload()
 
