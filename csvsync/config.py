@@ -7,6 +7,7 @@ class Config:
             defaults = {'token': 'token.pickle',
                         'credentials': 'credentials.json',
                         'syncdir': 'csvsync',
+                        'quote': 'minimal',
                         'pad_lines': True})
         self.config = config
 

@@ -193,6 +193,7 @@ class Sync:
         # We need to lookup the right primary key for the merge
 
         merge_key = self.fileconfig['key']
+        quote = self.fileconfig['quote']
 
         eprint("Merging files...")
         with open(filename_LCA, 'rt') as file_LCA:
@@ -201,6 +202,7 @@ class Sync:
                     with open(filename_output, 'wt') as file_output:
                         result = csvdiff3.merge3.merge3(file_LCA, file_A, file_B,
                                                         merge_key,
+                                                        quote = quote,
                                                         output = file_output)
 
         # We return True (success) if the merge did NOT have a conflict
