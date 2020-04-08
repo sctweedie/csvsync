@@ -84,7 +84,7 @@ class Sync:
         eprint("Uploading result...")
         self.gsheet.load_from_csv(filename)
 
-    def sync(self):
+    def cli_sync(self):
         status = self.status
 
         # Test things look OK before we start downloading data.
@@ -122,7 +122,7 @@ class Sync:
         finally:
             self.cleanup_download()
 
-    def pull(self):
+    def cli_pull(self):
         status = self.status
 
         if status != None and status != 'READY':
@@ -137,7 +137,7 @@ class Sync:
         os.rename(self.download_filename, self.save_filename)
         shutil.copy(self.save_filename, self.fileconfig['filename'])
 
-    def push(self):
+    def cli_push(self):
         status = self.status
 
         if status != None and status != 'READY':
@@ -154,7 +154,7 @@ class Sync:
 
         self.upload()
 
-    def abort(self):
+    def cli_abort(self):
         status = self.status
 
         if status != 'MERGING':
@@ -168,6 +168,11 @@ class Sync:
             os.unlink(self.merge_filename)
 
         self.status = 'READY'
+
+    def cli_status(self):
+        status = self.status
+
+        print(status)
 
     def merge_files(self):
         self.status = "MERGING"

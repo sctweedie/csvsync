@@ -15,7 +15,7 @@ def csvsync_cli():
 @csvsync_cli.command("sync")
 @click.argument("filename")
 
-def sync_cli(filename):
+def cli_sync(filename):
     config = Config()
     fileconfig = config[filename]
 
@@ -26,12 +26,12 @@ def sync_cli(filename):
 
     print(sync.status)
 
-    sync.sync()
+    sync.cli_sync()
 
 @csvsync_cli.command("pull")
 @click.argument("filename")
 
-def pull_cli(filename):
+def cli_pull(filename):
     config = Config()
     fileconfig = config[filename]
 
@@ -40,12 +40,12 @@ def pull_cli(filename):
 
     sync = Sync(fileconfig, sheet)
 
-    sync.pull()
+    sync.cli_pull()
 
 @csvsync_cli.command("push")
 @click.argument("filename")
 
-def pull_cli(filename):
+def cli_push(filename):
     config = Config()
     fileconfig = config[filename]
 
@@ -54,18 +54,29 @@ def pull_cli(filename):
 
     sync = Sync(fileconfig, sheet)
 
-    sync.push()
+    sync.cli_push()
 
 @csvsync_cli.command("abort")
 @click.argument("filename")
 
-def abort_cli(filename):
+def cli_abort(filename):
     config = Config()
     fileconfig = config[filename]
 
     sync = Sync(fileconfig, None)
 
-    sync.abort()
+    sync.cli_abort()
+
+@csvsync_cli.command("status")
+@click.argument("filename")
+
+def cli_status(filename):
+    config = Config()
+    fileconfig = config[filename]
+
+    sync = Sync(fileconfig, None)
+
+    sync.cli_status()
 
 if __name__ == "__main__":
     csvsync_cli()
