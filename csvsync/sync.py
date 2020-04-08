@@ -15,7 +15,7 @@ class Sync:
 
         self.subdir = fileconfig['syncdir']
 
-        basename = os.path.basename(fileconfig['filename'])
+        basename = fileconfig.section.get('cachename', os.path.basename(fileconfig['filename']))
 
         # We will maintain persistent state for the 3-way sync in
         # various files in the csvsync/ subdir:
