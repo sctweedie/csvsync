@@ -7,9 +7,15 @@ from .sync import Sync
 import click
 import sys
 import shutil
+import logging
 
 @click.group()
-def csvsync_cli():
+@click.option("-d", "--debug", is_flag = True, default = False)
+
+def csvsync_cli(debug):
+    if debug:
+        logging.basicConfig(filename = "DEBUG.log", level = logging.DEBUG)
+
     pass
 
 @csvsync_cli.command("sync")

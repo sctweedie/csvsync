@@ -1,5 +1,6 @@
 import configparser
 import os
+import logging
 
 class Config:
     def __init__(self):
@@ -11,8 +12,20 @@ class Config:
                         'pad_lines': True})
         self.config = config
 
-        config.read([os.path.expanduser('~/.csvsync.ini'),
-                     'csvsync.ini',])
+        config.read([os.path.expanduser('~/.csvsync.ini')])
+
+        path = os.getcwd()
+        while True:
+            file = os.path.join(path, 'csvsync.ini')
+            if os.path.exists(file):
+                logging.debug("Using ini file at " + file)
+                config.read([file])
+                break
+
+            parent,_ = os.path.split(path)
+            if parent == path:
+                break
+            path = parent
 
     def save(self):
         with open('csvsync.ini', 'wt') as file:
