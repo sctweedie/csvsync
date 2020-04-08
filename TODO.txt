@@ -5,3 +5,12 @@
   Should just default to using the first sheet in the spreadsheet
   (ie. index 0).
 
+* Error handling when no spreadsheet requested
+ * Allow one to be selected as a default?
+
+* Avoid unnecessary format changes in upload/download sync
+ * Use a new "prefer_format=A" option in csvmerge?
+
+   Goal would be to avoid changing quoting etc. if the local file
+   format does not match the google sheet but all data otherwise
+   matches.
