@@ -15,11 +15,14 @@ class Config:
         config.read([os.path.expanduser('~/.csvsync.ini')])
 
         path = os.getcwd()
+        self.basepath = path
+
         while True:
             file = os.path.join(path, 'csvsync.ini')
             if os.path.exists(file):
                 logging.debug("Using ini file at " + file)
                 config.read([file])
+                self.basepath = path
                 break
 
             parent,_ = os.path.split(path)
@@ -36,10 +39,20 @@ class Config:
             if section == 'DEFAULT':
                 continue
 
-            if section == filename or self.config[section]['filename'] == filename:
+            if section == filename or self._matches(self.config[section]['filename'], filename):
+                logging.debug("Found config section " + section)
                 return FileConfig(self, self.config[section])
 
         raise KeyError
+
+    def _matches(self, config_filename, user_filename):
+        """
+        Checks if a supplied user filename matches the filename stored in a
+        config section
+        """
+        canonical_config_filename = os.path.normpath(os.path.join(self.basepath, config_filename))
+        canonical_user_filename = os.path.normpath(os.path.join(os.getcwd(), user_filename))
+        return canonical_user_filename == canonical_config_filename
 
 class FileConfig:
     def __init__(self, config, section):

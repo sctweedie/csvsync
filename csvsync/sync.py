@@ -13,7 +13,7 @@ class Sync:
         self.fileconfig = fileconfig
         self.gsheet = gsheet
 
-        self.subdir = fileconfig['syncdir']
+        self.subdir = os.path.join(fileconfig.config.basepath, fileconfig['syncdir'])
 
         basename = fileconfig.section.get('cachename', os.path.basename(fileconfig['filename']))
 
