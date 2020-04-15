@@ -45,7 +45,7 @@ class Sheet:
 
         # Find all the sheet tabs from the given spreadsheet
 
-        service = build('sheets', 'v4', credentials = auth.creds).spreadsheets()
+        service = build('sheets', 'v4', credentials = auth.creds, cache_discovery = False).spreadsheets()
         self.service = service
         self.spreadsheet_id = fileconfig['spreadsheet_id']
 
