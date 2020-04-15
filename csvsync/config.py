@@ -14,21 +14,22 @@ class Config:
 
         config.read([os.path.expanduser('~/.csvsync.ini')])
 
-        path = os.getcwd()
+        path = "."
         self.basepath = path
 
         while True:
             file = os.path.join(path, 'csvsync.ini')
             if os.path.exists(file):
-                logging.debug("Using ini file at " + file)
-                config.read([file])
                 self.basepath = path
+                logging.debug("Using base path %s and ini file at %s" % (path, file))
+                config.read([file])
                 break
 
-            parent,_ = os.path.split(path)
-            if parent == path:
+            parent = os.path.normpath(os.path.join("..", path))
+            if os.path.samefile(path, parent):
                 break
             path = parent
+
 
     def save(self):
         with open('csvsync.ini', 'wt') as file:
@@ -50,9 +51,13 @@ class Config:
         Checks if a supplied user filename matches the filename stored in a
         config section
         """
-        canonical_config_filename = os.path.normpath(os.path.join(self.basepath, config_filename))
-        canonical_user_filename = os.path.normpath(os.path.join(os.getcwd(), user_filename))
+        canonical_config_filename = os.path.abspath(os.path.join(self.basepath, config_filename))
+        canonical_user_filename = os.path.abspath(user_filename)
         return canonical_user_filename == canonical_config_filename
+
+    def file_relative_to_config(self, filename):
+        fullpath = os.path.join(self.basepath, filename)
+        return os.path.normpath(fullpath)
 
 class FileConfig:
     def __init__(self, config, section):
@@ -67,7 +72,7 @@ class FileConfig:
         # component, we default to the local csvsync subdir
 
         if os.path.dirname(filename) == '':
-            subdir = self.section['syncdir']
+            subdir = self.config.file_relative_to_config(self.section['syncdir'])
             filename = os.path.join(subdir, filename)
 
         filename = os.path.expanduser(filename)

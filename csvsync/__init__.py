@@ -9,6 +9,19 @@ import sys
 import shutil
 import logging
 
+def eprint(*args, **kwargs):
+    """
+    print to stderr
+    """
+    print (*args, file=sys.stderr, **kwargs)
+
+def find_config(config, filename):
+    try:
+        return config[filename]
+    except KeyError:
+        eprint("Cannot find config matching filename:", filename)
+        exit(1)
+
 @click.group()
 @click.option("-d", "--debug", is_flag = True, default = False)
 
@@ -23,7 +36,7 @@ def csvsync_cli(debug):
 
 def cli_sync(filename):
     config = Config()
-    fileconfig = config[filename]
+    fileconfig = find_config(config, filename)
 
     auth = gsheet.Auth(fileconfig)
     sheet = gsheet.Sheet(fileconfig, auth)
@@ -39,7 +52,7 @@ def cli_sync(filename):
 
 def cli_pull(filename):
     config = Config()
-    fileconfig = config[filename]
+    fileconfig = find_config(config, filename)
 
     auth = gsheet.Auth(fileconfig)
     sheet = gsheet.Sheet(fileconfig, auth)
@@ -53,7 +66,7 @@ def cli_pull(filename):
 
 def cli_push(filename):
     config = Config()
-    fileconfig = config[filename]
+    fileconfig = find_config(config, filename)
 
     auth = gsheet.Auth(fileconfig)
     sheet = gsheet.Sheet(fileconfig, auth)
@@ -67,7 +80,7 @@ def cli_push(filename):
 
 def cli_abort(filename):
     config = Config()
-    fileconfig = config[filename]
+    fileconfig = find_config(config, filename)
 
     sync = Sync(fileconfig, None)
 
@@ -78,7 +91,7 @@ def cli_abort(filename):
 
 def cli_status(filename):
     config = Config()
-    fileconfig = config[filename]
+    fileconfig = find_config(config, filename)
 
     sync = Sync(fileconfig, None)
 

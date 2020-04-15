@@ -5,15 +5,18 @@ import os
 import configparser
 import shutil
 import filecmp
+import logging
 
 import csvdiff3
 
 class Sync:
+
     def __init__(self, fileconfig, gsheet):
         self.fileconfig = fileconfig
         self.gsheet = gsheet
 
-        self.subdir = os.path.join(fileconfig.config.basepath, fileconfig['syncdir'])
+        self.subdir = fileconfig.config.file_relative_to_config(fileconfig['syncdir'])
+        self.local_filename = fileconfig.config.file_relative_to_config(self.fileconfig['filename'])
 
         basename = fileconfig.section.get('cachename', os.path.basename(fileconfig['filename']))
 
@@ -70,7 +73,7 @@ class Sync:
 
         pad_lines = self.fileconfig['pad_lines']
         eprint("Downloading...")
-        self.gsheet.save_to_csv(filename)
+        self.gsheet.save_to_csv(filename, pad_lines)
 
     def cleanup_download(self):
         filename = self.download_filename
@@ -135,7 +138,7 @@ class Sync:
 
         self.download()
         os.rename(self.download_filename, self.save_filename)
-        shutil.copy(self.save_filename, self.fileconfig['filename'])
+        shutil.copy(self.save_filename, self.local_filename)
 
     def cli_push(self):
         status = self.status
@@ -144,7 +147,7 @@ class Sync:
             eprint('Error: sync already in progress (status is %s)' % status)
             exit(1)
 
-        filename = self.fileconfig['filename']
+        filename = self.local_filename
 
         if not os.path.exists(filename):
             eprint('Error: local file (%s) not found' % filename)
@@ -174,6 +177,17 @@ class Sync:
 
         print(status)
 
+        # Status will also dump additional file stats to the DEBUG log, if enabled:
+        logging.debug("File info:")
+        for attr, desc in [("local_filename", "Local file"),
+                           ("status_filename", "status"),
+                           ("download_filename", "download"),
+                           ("merge_filename", "merge"),
+                           ("save_filename", "saved (LCA)")]:
+            filename = getattr(self, attr)
+            present = "(Present)" if os.path.exists(filename) else "(Not present)"
+            logging.debug("  %s: %s %s" % (desc, filename, present))
+
     def merge_files(self):
         self.status = "MERGING"
 
@@ -185,7 +199,7 @@ class Sync:
 
         # Branch A is the local working copy of the file
 
-        filename_A = self.fileconfig['filename']
+        filename_A = self.local_filename
 
         # Branch B is the downloaded copy of the remote google sheet
 
@@ -227,7 +241,7 @@ class Sync:
         # merge, and upload the results.
 
         os.rename(self.merge_filename, self.save_filename)
-        shutil.copy(self.save_filename, self.fileconfig['filename'])
+        shutil.copy(self.save_filename, self.local_filename)
 
         # If the download file still exists (ie. we didn't pause for a
         # manual conflict resolution), and the reconciled file is the
