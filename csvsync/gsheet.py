@@ -81,19 +81,15 @@ class Sheet:
 
         values = result.get('values', [])
 
-        print ("Loaded %d lines from sheet" % len(values))
+        print (f'Loaded {len(values)} lines from sheet')
 
-        max_len = 0
-        for row in values:
-            if len(row) > max_len:
-                max_len = len(row)
+        max_len = max([len(row) for row in values])
 
         with open(filename, 'wt') as csvfile:
             csvwriter = csv.writer(csvfile, lineterminator = os.linesep)
             for row in values:
                 if pad_lines:
-                    while len(row) < max_len:
-                        row.append('')
+                    row += [''] * (max_len - len(row))
                 csvwriter.writerow(row)
 
     def load_from_csv(self, filename):
