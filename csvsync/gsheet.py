@@ -100,23 +100,26 @@ class Sheet:
             for row in reader:
                 values.append(row)
 
-        range = self.sheet_name
+        data = [
+            {
+                'range': self.sheet_name,
+                'values': values
+            }
+        ]
 
         body = {
-            'values': values
+            'valueInputOption': 'RAW',
+            'data': data
         }
 
         eprint (f'Uploading {len(values)} lines...')
 
         result = self.service \
             .values() \
-            .update(spreadsheetId = self.spreadsheet_id,
-                    range = range,
-                    valueInputOption = 'RAW',
-                    body  = body
+            .batchUpdate(spreadsheetId = self.spreadsheet_id,
+                         body  = body
             ).execute()
 
-        eprint (f'Updated {result.get("updatedCells")} cells')
         return
 
 # Old code:
