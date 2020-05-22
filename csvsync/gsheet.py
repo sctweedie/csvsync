@@ -95,76 +95,50 @@ class Sheet:
     def load_from_csv(self, filename):
         values = []
 
+        # Read in the CSV file
+
         with open(filename, 'rt') as csvfile:
             reader = csv.reader(csvfile)
             for row in reader:
                 values.append(row)
 
-        data = [
+        # Now construct a list of google API-compatible rows from that data
+
+        rowdata = []
+        for row in values:
+            cells = []
+            for cell in row:
+                cells.append({
+                    'userEnteredValue':
+                    {
+                        'stringValue': str(cell)
+                    }
+                })
+            rowdata.append({
+                'values': cells
+                })
+
+        requests = [
+            # Update the main content of the spreadsheet with the new
+            # values constructed from the CSV
             {
-                'range': self.sheet_name,
-                'values': values
-            }
-        ]
+                'updateCells': {
+                    'range': {
+                        'sheetId': self.sheet_id,
+                        'startRowIndex': 0,
+                    },
+                    'fields': 'userEnteredValue',
+                    'rows': rowdata
+                }
+            }]
 
         body = {
-            'valueInputOption': 'RAW',
-            'data': data
+            'requests': requests
         }
 
         eprint (f'Uploading {len(values)} lines...')
 
         result = self.service \
-            .values() \
             .batchUpdate(spreadsheetId = self.spreadsheet_id,
-                         body  = body
+                         body = body
             ).execute()
-
-        return
-
-# Old code:
-
-        # Count the lines in the CSV (use the proper CSV parser to
-        # handle things like newlines embedded in a quoted string).
-        #
-        # We need a robust line count to make sure we clear the
-        # spreadsheet of any additional trailing lines that are no
-        # longer needed.
-
-        csvreader = csv.reader(io.StringIO(csvContents))
-        lines = 0
-        for row in csvreader:
-            lines += 1
-
-        eprint (f'Uploading {lines} lines')
-
-        body = {
-            # Use pasteData to insert the new data
-            'requests': [{
-                'pasteData': {
-                    'coordinate': {
-                        'sheetId': self.sheet_id,
-                        'rowIndex': '0',
-                        'columnIndex': '0',
-                    },
-                    'data': csvContents,
-                    'type': 'PASTE_VALUES',
-                    'delimiter': ',',
-                }
-            },
-            # and use updateCells with userEnteredValue and no value
-            # to clear the remaining rows of the sheet.
-            {
-                'updateCells': {
-                    'range': {
-                        'sheetId': self.sheet_id,
-                        'startRowIndex': lines,
-                    },
-                    'fields': 'userEnteredValue'
-                }
-            }]
-        }
-
-        result = self.service \
-            .batchUpdate(spreadsheetId = self.spreadsheet_id, body = body) \
-            .execute()
