@@ -93,8 +93,33 @@ class Sheet:
                 csvwriter.writerow(row)
 
     def load_from_csv(self, filename):
+        values = []
+
         with open(filename, 'rt') as csvfile:
-            csvContents = csvfile.read()
+            reader = csv.reader(csvfile)
+            for row in reader:
+                values.append(row)
+
+        range = self.sheet_name
+
+        body = {
+            'values': values
+        }
+
+        eprint (f'Uploading {len(values)} lines...')
+
+        result = self.service \
+            .values() \
+            .update(spreadsheetId = self.spreadsheet_id,
+                    range = range,
+                    valueInputOption = 'RAW',
+                    body  = body
+            ).execute()
+
+        eprint (f'Updated {result.get("updatedCells")} cells')
+        return
+
+# Old code:
 
         # Count the lines in the CSV (use the proper CSV parser to
         # handle things like newlines embedded in a quoted string).
@@ -108,7 +133,7 @@ class Sheet:
         for row in csvreader:
             lines += 1
 
-        eprint ('Uploading %d lines' % lines)
+        eprint (f'Uploading {lines} lines')
 
         body = {
             # Use pasteData to insert the new data
