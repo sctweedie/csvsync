@@ -126,7 +126,10 @@ class Sheet:
 
         requests = [
             # Update the main content of the spreadsheet with the new
-            # values constructed from the CSV
+            # values constructed from the CSV.  A startRowIndex of 0
+            # with no endRowIndex will cause a complete replace of the
+            # sheet, including culling any trailing lines beyond the
+            # data uploaded.
             {
                 'updateCells': {
                     'range': {
