@@ -32,10 +32,18 @@ def csvsync_cli(debug):
     pass
 
 @csvsync_cli.command("sync")
+@click.option("-c", "--continue", is_flag = True, default = False)
 @click.argument("filename")
 
-def cli_sync(filename):
+def cli_sync(**args):
     config = Config()
+
+    filename = args["filename"]
+    # We need to process the args this way to avoid using a named
+    # argument "continue" that collides with the Python continue
+    # keyword
+    continue_sync = args["continue"]
+
     fileconfig = find_config(config, filename)
 
     auth = gsheet.Auth(fileconfig)
@@ -45,7 +53,7 @@ def cli_sync(filename):
 
     print(sync.status)
 
-    sync.cli_sync()
+    sync.cli_sync(continue_sync)
 
 @csvsync_cli.command("pull")
 @click.argument("filename")

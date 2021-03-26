@@ -48,7 +48,7 @@ class Sync:
         try:
             status = self.status_config['csvsync']['status']
         except KeyError:
-            status = None
+            status = "READY"
 
         self.__status = status
         return status
@@ -66,6 +66,14 @@ class Sync:
         section['status'] = value
         with open(self.status_filename, 'wt') as configfile:
             self.status_config.write(configfile)
+
+    def state_change(self, old, new):
+        if self.status != old:
+            eprint("Error, state is %s, expecting %s.  Aborting." % (self.status, old))
+            exit(1)
+
+        logging.debug("State %s -> %s" % (old, new))
+        self.status = new
 
     def download(self):
         filename = self.download_filename
@@ -87,17 +95,12 @@ class Sync:
         eprint("Uploading result...")
         self.gsheet.load_from_csv(filename)
 
-    def cli_sync(self):
-        status = self.status
+    def cli_sync(self, continue_sync):
+
+        if continue_sync:
+            return self.cli_sync_continue()
 
         # Test things look OK before we start downloading data.
-
-        # First make sure we're not already in the middle of a sync
-        # (eg. manually resolving a sync with conflicts)
-
-        if status != None and status != 'READY':
-            eprint('Error: sync already in progress (status is %s)' % status)
-            exit(1)
 
         # Make sure we have a latest-common-ancestor to work with
 
@@ -113,17 +116,29 @@ class Sync:
             eprint('Error: no primary key defined for file')
             exit(1)
 
+        # Make sure we're not already in the middle of a sync
+        # (eg. manually resolving a sync with conflicts)
+
+        self.state_change("READY", "MERGING")
+
         self.download()
 
         try:
             # Create a 3-way merge
             result = self.merge_files()
 
-            if result:
-                self.merge_complete()
+            if not result:
+                eprint("Warning: merge conflicts in %s" % self.local_filename)
+                eprint("Fix conflicts then continue with csvsync sync --continue $file")
+                exit(1)
+
+            self.merge_complete()
 
         finally:
             self.cleanup_download()
+
+    def cli_sync_continue(self):
+        self.merge_complete()
 
     def cli_pull(self):
         status = self.status
@@ -189,8 +204,6 @@ class Sync:
             logging.debug("  %s: %s %s" % (desc, filename, present))
 
     def merge_files(self):
-        self.status = "MERGING"
-
         # Locate the 3 files for a 3-way merge:
         #
         # LCA (Latest Common Ancestor) is the local SAVE file
@@ -228,11 +241,7 @@ class Sync:
         return not result
 
     def merge_complete(self):
-        status = self.status
-
-        if status != 'MERGING':
-            eprint('Error: merge not in progress (status is %s)' % status)
-            exit(1)
+        self.state_change("MERGING", "POST-PUSH")
 
         # The 3-way merge has been completed (either automatically, or
         # after manual conflict resolution).
@@ -254,4 +263,4 @@ class Sync:
         else:
             self.upload()
 
-        self.status = 'READY'
+        self.state_change("POST-PUSH", "READY")
