@@ -43,19 +43,43 @@ class Sync:
         if os.path.exists(self.status_filename):
             self.status_config.read(self.status_filename)
 
-    @property
-    def status(self):
+    def __load_status(self):
+        try:
+            if self.__loaded_status:
+                return
+        except AttributeError:
+            pass
+
         try:
             status = self.status_config['csvsync']['status']
         except KeyError:
-            status = "READY"
+            status = "NEW"
+
+        try:
+            command = self.status_config['csvsync']['current_command']
+        except KeyError:
+            command = "none"
 
         self.__status = status
-        return status
+        self.__command = command
+        self.__loaded_status = True
+
+    @property
+    def status(self):
+        self.__load_status()
+        return self.__status
+
+    @property
+    def command(self):
+        self.__load_status()
+        return self.__command
 
     @status.setter
     def status(self, value):
-        self.__status = value
+        try:
+            self.__status, self.__command = value
+        except ValueError:
+            self.__status = value
 
         try:
             section = self.status_config['csvsync']
@@ -63,7 +87,8 @@ class Sync:
             self.status_config.add_section('csvsync')
             section = self.status_config['csvsync']
 
-        section['status'] = value
+        section['status'] = self.__status
+        section['current_command'] = self.__command
         with open(self.status_filename, 'wt') as configfile:
             self.status_config.write(configfile)
 
