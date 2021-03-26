@@ -108,10 +108,16 @@ class Sheet:
         for row in values:
             cells = []
             for cell in row:
+                if isinstance(cell, int) or isinstance(cell, float):
+                    celltype = "numberValue"
+                    cellval = float(cell)
+                else:
+                    celltype = "stringValue"
+                    cellval = str(cell)
                 cells.append({
                     'userEnteredValue':
                     {
-                        'stringValue': str(cell)
+                        celltype: cellval
                     }
                 })
             rowdata.append({
