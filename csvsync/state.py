@@ -92,10 +92,15 @@ class Sync:
 
     @status.setter
     def status(self, value):
+        old = self.__status
+
         try:
             self.__status, self.__command = value
+            logging.debug(f"State {old} -> {self.__status}, command := {self.__command}")
+
         except ValueError:
             self.__status = value
+            logging.debug(f"State {old} -> {self.__status}")
 
         try:
             section = self.status_config['csvsync']
@@ -113,7 +118,6 @@ class Sync:
             eprint("Error, state is %s, expecting %s.  Aborting." % (self.status, old))
             exit(1)
 
-        logging.debug("State %s -> %s" % (old, new))
         if command:
             assert self.status == "READY"
             self.status = (new, command)
