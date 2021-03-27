@@ -29,6 +29,7 @@ def cli_sync(**args):
     fileconfig = csvsync.cli.find_config(config, filename)
 
     sync = Sync(fileconfig)
+    csvsync.cli.cli_check_state(sync)
 
     if continue_sync:
         return do__sync_continue()

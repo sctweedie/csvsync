@@ -101,17 +101,10 @@ def find_config(config, filename):
         eprint("Cannot find config matching filename:", filename)
         exit(1)
 
-def cli_check_ready(config, fileconfig):
-    pass
-
-class CLIError(Exception):
-    """Exception class for general sync CLI errors"""
-
-    def __init__(self, message, *args):
-        progname = os.path.basename(sys.argv[0])
-        self.message = f"{progname}: {message}"
-
-        super(CLIError, self).__init__(message, *args)
+def cli_check_state(sync, expected = "READY"):
+    status = sync.status
+    if status != expected:
+        raise CLIError(f"File {sync.fileconfig.section_name} not {expected} (state is {status})")
 
 ##
 ## Top-level entrypoint.

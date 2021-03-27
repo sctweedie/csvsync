@@ -36,13 +36,20 @@ class Config:
             self.config.write(file)
 
     def __getitem__(self, filename):
-        for section in self.config:
-            if section == 'DEFAULT':
+        for section_name in self.config:
+            if section_name == 'DEFAULT':
                 continue
 
-            if section == filename or self._matches(self.config[section]['filename'], filename):
-                logging.debug("Found config section " + section)
-                return FileConfig(self, self.config[section], section)
+            section = self.config[section_name]
+
+            if section_name == filename:
+                logging.debug("Found config section " + section_name)
+                return FileConfig(self, section, section_name)
+
+            section_filename = section.get('filename', None)
+            if section_filename and _matches(section_filename, filename):
+                logging.debug("Found config section " + section_name)
+                return FileConfig(self, section, section_name)
 
         raise KeyError
 
@@ -82,4 +89,7 @@ class FileConfig:
 
     def __getitem__(self, key):
         return self.section[key]
+
+    def __contains__(self, key):
+        return key in self.section
 

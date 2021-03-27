@@ -5,7 +5,7 @@
 # functions.
 
 from . import gsheet, config
-from .lib import eprint
+from .lib import *
 
 import os
 import configparser
@@ -19,6 +19,15 @@ class Sync:
 
     def __init__(self, fileconfig):
         self.fileconfig = fileconfig
+
+        # Perform some basic tests on the file config being used here.
+        # We will propagate exceptions cleanly up to the CLI entry
+        # point before getting too deep into the actual work.
+
+        self.check_config_key('filename')
+        self.check_config_key('spreadsheet_id')
+        self.check_config_key('sheet')
+        self.check_config_key('key')
 
         self.__gsheet = None
 
@@ -59,6 +68,13 @@ class Sync:
 
         if os.path.exists(self.status_filename):
             self.status_config.read(self.status_filename)
+
+    def check_config_key(self, keyname):
+        fileconfig = self.fileconfig
+        if keyname not in fileconfig:
+            raise CLIError("Incomplete config, "
+                           f"""required key "{keyname}" missing """
+                           f"for file {fileconfig.section_name}")
 
     def __load_status(self):
         try:
