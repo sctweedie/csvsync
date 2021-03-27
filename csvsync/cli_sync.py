@@ -30,12 +30,8 @@ def cli_sync(**args):
 
     sync = Sync(fileconfig)
 
-    do_sync(sync, continue_sync)
-
-def do_sync(sync, continue_sync):
-
     if continue_sync:
-        return sync.cli_sync_continue()
+        return do__sync_continue()
 
     # Test things look OK before we start downloading data.
 
