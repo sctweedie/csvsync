@@ -9,7 +9,7 @@ import logging
 
 import csvdiff3
 
-class Sync:
+class OldSync:
 
     def __init__(self, fileconfig, gsheet):
         self.fileconfig = fileconfig
@@ -166,95 +166,3 @@ class Sync:
 
         self.upload()
 
-    def cli_abort(self):
-        status = self.status
-
-        if status != 'MERGING':
-            eprint('Error: no sync in progress (status is %s)' % status)
-            exit(1)
-
-        if os.path.exists(self.download_filename):
-            os.unlink(self.download_filename)
-
-        if os.path.exists(self.merge_filename):
-            os.unlink(self.merge_filename)
-
-        self.status = 'READY'
-
-    def cli_status(self):
-        status = self.status
-
-        print(status)
-
-        # Status will also dump additional file stats to the DEBUG log, if enabled:
-        logging.debug("File info:")
-        for attr, desc in [("local_filename", "Local file"),
-                           ("status_filename", "status"),
-                           ("download_filename", "download"),
-                           ("merge_filename", "merge"),
-                           ("save_filename", "saved (LCA)")]:
-            filename = getattr(self, attr)
-            present = "(Present)" if os.path.exists(filename) else "(Not present)"
-            logging.debug("  %s: %s %s" % (desc, filename, present))
-
-    def merge_files(self):
-        # Locate the 3 files for a 3-way merge:
-        #
-        # LCA (Latest Common Ancestor) is the local SAVE file
-
-        filename_LCA = self.save_filename
-
-        # Branch A is the local working copy of the file
-
-        filename_A = self.local_filename
-
-        # Branch B is the downloaded copy of the remote google sheet
-
-        filename_B = self.download_filename
-
-        # And our output is going to be the local MERGE file
-
-        filename_output = self.merge_filename
-
-        # We need to lookup the right primary key for the merge
-
-        merge_key = self.fileconfig['key']
-        quote = self.fileconfig['quote']
-
-        eprint("Merging files...")
-        with open(filename_LCA, 'rt') as file_LCA:
-            with open(filename_A, 'rt') as file_A:
-                with open(filename_B, 'rt') as file_B:
-                    with open(filename_output, 'wt') as file_output:
-                        result = csvdiff3.merge3.merge3(file_LCA, file_A, file_B,
-                                                        merge_key,
-                                                        quote = quote,
-                                                        output = file_output)
-
-        # We return True (success) if the merge did NOT have a conflict
-        return not result
-
-    def merge_complete(self):
-        self.state_change("MERGING", "POST-PUSH")
-
-        # The 3-way merge has been completed (either automatically, or
-        # after manual conflict resolution).
-        #
-        # We can now save it as a SAVE file as LCA for the next 3-way
-        # merge, and upload the results.
-
-        os.rename(self.merge_filename, self.save_filename)
-        shutil.copy(self.save_filename, self.local_filename)
-
-        # If the download file still exists (ie. we didn't pause for a
-        # manual conflict resolution), and the reconciled file is the
-        # same as the download, then we don't need to re-upload.
-
-        if os.path.exists(self.download_filename) and \
-           filecmp.cmp(self.download_filename, self.save_filename,
-                       shallow = False):
-            eprint('No changes pending against remote file, skipping re-upload')
-        else:
-            self.upload()
-
-        self.state_change("POST-PUSH", "READY")
