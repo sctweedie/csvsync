@@ -29,12 +29,14 @@ def cli_sync(**args):
     fileconfig = csvsync.cli.find_config(config, filename)
 
     sync = Sync(fileconfig)
-    csvsync.cli.cli_check_state(sync)
 
     if continue_sync:
         return do__sync_continue()
 
-    # Test things look OK before we start downloading data.
+    # Test things look OK before we start downloading data.  The
+    # initial setup of the Sync class will have done basic validation
+    # of the config, but now we need to test that the various files we
+    # need are actually present etc.
 
     # Make sure we have a latest-common-ancestor to work with
 
@@ -42,24 +44,22 @@ def cli_sync(**args):
         eprint('Error: no saved copy (%s) exists for file' % sync.save_filename)
         exit(1)
 
-    # Check that the user has specified a primary key for the sync
-
-    try:
-        merge_key = sync.fileconfig['key']
-    except KeyError:
-        eprint('Error: no primary key defined for file')
-        exit(1)
-
     # Make sure we're not already in the middle of a sync
     # (eg. manually resolving a sync with conflicts)
 
-    sync.state_change("READY", "MERGING")
+    csvsync.cli.cli_check_state(sync)
+
+    sync.state_change("READY", "PULL", command = "sync")
 
     sync.download()
+
+    sync.state_change("PULL", "MERGE")
 
     try:
         # Create a 3-way merge
         result = merge_files(sync)
+
+        sync.state_change("MERGE", "RESOLVE")
 
         if not result:
             eprint("Warning: merge conflicts in %s" % sync.local_filename)
@@ -112,7 +112,7 @@ def merge_files(sync):
     return not result
 
 def merge_complete(sync):
-    sync.state_change("MERGING", "POST-PUSH")
+    sync.state_change("RESOLVE", "PUSH")
 
     # The 3-way merge has been completed (either automatically, or
     # after manual conflict resolution).
@@ -134,4 +134,4 @@ def merge_complete(sync):
     else:
         sync.upload()
 
-    sync.state_change("POST-PUSH", "READY")
+    sync.state_change("PUSH", "READY", command = "none")

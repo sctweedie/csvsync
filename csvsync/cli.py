@@ -53,8 +53,8 @@ def cli_abort(filename):
 
     status = sync.status
 
-    if status != 'MERGING':
-        eprint('Error: no sync in progress (status is %s)' % status)
+    if status != 'RESOLVE':
+        raise CLIError(f'no sync in progress (status is {status})')
         exit(1)
 
     if os.path.exists(sync.download_filename):

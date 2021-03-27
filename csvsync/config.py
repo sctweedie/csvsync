@@ -47,7 +47,7 @@ class Config:
                 return FileConfig(self, section, section_name)
 
             section_filename = section.get('filename', None)
-            if section_filename and _matches(section_filename, filename):
+            if section_filename and self._matches(section_filename, filename):
                 logging.debug("Found config section " + section_name)
                 return FileConfig(self, section, section_name)
 

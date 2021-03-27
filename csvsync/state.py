@@ -136,7 +136,10 @@ class Sync:
             exit(1)
 
         if command:
-            assert self.status == "READY"
+            if command == "none":
+                assert new == "READY"
+            else:
+                assert self.status == "READY"
             self.status = (new, command)
         else:
             self.status = new
