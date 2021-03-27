@@ -31,7 +31,17 @@ class Sync:
         # Temporary local download file for the google sheet
         self.download_filename = os.path.join(self.subdir, basename + '.DOWNLOAD')
 
-        # Output of the 3-way merge
+        # Temporary copy of the local file.
+        # For 3-way merge, the local file will be updated with the contents of the merge, for the user
+        # to edit in-place for conflict resolution
+        # The "local" copy here can be used to undo the merge and restore to the original contents.
+        self.local_copy_filename = os.path.join(self.subdir, basename + '.LOCAL')
+
+        # The download and local file copies above are left in place after a merge/resolve
+        # completes, and can be considered backups of the old copies of the local and
+        # remote contents.
+
+        # Output of the 3-way merge:
         self.merge_filename = os.path.join(self.subdir, basename + '.MERGE')
 
         # Saved copy of the most recently known Latest Common Ancestor
@@ -92,13 +102,17 @@ class Sync:
         with open(self.status_filename, 'wt') as configfile:
             self.status_config.write(configfile)
 
-    def state_change(self, old, new):
+    def state_change(self, old, new, command = None):
         if self.status != old:
             eprint("Error, state is %s, expecting %s.  Aborting." % (self.status, old))
             exit(1)
 
         logging.debug("State %s -> %s" % (old, new))
-        self.status = new
+        if command:
+            assert self.status == "READY"
+            self.status = (new, command)
+        else:
+            self.status = new
 
     def download(self):
         filename = self.download_filename
@@ -119,51 +133,6 @@ class Sync:
 
         eprint("Uploading result...")
         self.gsheet.load_from_csv(filename)
-
-    def cli_sync(self, continue_sync):
-
-        if continue_sync:
-            return self.cli_sync_continue()
-
-        # Test things look OK before we start downloading data.
-
-        # Make sure we have a latest-common-ancestor to work with
-
-        if not os.path.exists(self.save_filename):
-            eprint('Error: no saved copy (%s) exists for file' % self.save_filename)
-            exit(1)
-
-        # Check that the user has specified a primary key for the sync
-
-        try:
-            merge_key = self.fileconfig['key']
-        except KeyError:
-            eprint('Error: no primary key defined for file')
-            exit(1)
-
-        # Make sure we're not already in the middle of a sync
-        # (eg. manually resolving a sync with conflicts)
-
-        self.state_change("READY", "MERGING")
-
-        self.download()
-
-        try:
-            # Create a 3-way merge
-            result = self.merge_files()
-
-            if not result:
-                eprint("Warning: merge conflicts in %s" % self.local_filename)
-                eprint("Fix conflicts then continue with csvsync sync --continue $file")
-                exit(1)
-
-            self.merge_complete()
-
-        finally:
-            self.cleanup_download()
-
-    def cli_sync_continue(self):
-        self.merge_complete()
 
     def cli_pull(self):
         status = self.status
