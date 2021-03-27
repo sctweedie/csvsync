@@ -27,10 +27,7 @@ def cli_pull(filename):
     config = Config()
     fileconfig = find_config(config, filename)
 
-    auth = gsheet.Auth(fileconfig)
-    sheet = gsheet.Sheet(fileconfig, auth)
-
-    sync = Sync(fileconfig, sheet)
+    sync = Sync(fileconfig)
 
     sync.cli_pull()
 
@@ -41,10 +38,7 @@ def cli_push(filename):
     config = Config()
     fileconfig = find_config(config, filename)
 
-    auth = gsheet.Auth(fileconfig)
-    sheet = gsheet.Sheet(fileconfig, auth)
-
-    sync = Sync(fileconfig, sheet)
+    sync = Sync(fileconfig)
 
     sync.cli_push()
 
@@ -55,7 +49,7 @@ def cli_abort(filename):
     config = Config()
     fileconfig = find_config(config, filename)
 
-    sync = Sync(fileconfig, None)
+    sync = Sync(fileconfig)
 
     status = sync.status
 
@@ -79,7 +73,7 @@ def cli_status(filename):
     config = Config()
     fileconfig = find_config(config, filename)
 
-    sync = Sync(fileconfig, None)
+    sync = Sync(fileconfig)
 
     status = sync.status
 

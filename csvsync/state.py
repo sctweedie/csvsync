@@ -17,9 +17,10 @@ import csvdiff3
 
 class Sync:
 
-    def __init__(self, fileconfig, gsheet):
+    def __init__(self, fileconfig):
         self.fileconfig = fileconfig
-        self.gsheet = gsheet
+
+        self.__gsheet = None
 
         self.subdir = fileconfig.config.file_relative_to_config(fileconfig['syncdir'])
         self.local_filename = fileconfig.config.file_relative_to_config(self.fileconfig['filename'])
@@ -143,4 +144,12 @@ class Sync:
 
         eprint("Uploading result...")
         self.gsheet.load_from_csv(filename)
+
+    @property
+    def gsheet(self):
+        if not self.__gsheet:
+            auth = gsheet.Auth(self.fileconfig)
+            self.__gsheet = gsheet.Sheet(self.fileconfig, auth)
+
+        return self.__gsheet
 

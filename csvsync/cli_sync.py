@@ -28,10 +28,7 @@ def cli_sync(**args):
 
     fileconfig = csvsync.cli.find_config(config, filename)
 
-    auth = gsheet.Auth(fileconfig)
-    sheet = gsheet.Sheet(fileconfig, auth)
-
-    sync = Sync(fileconfig, sheet)
+    sync = Sync(fileconfig)
 
     do_sync(sync, continue_sync)
 
