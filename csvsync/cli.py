@@ -104,5 +104,27 @@ def find_config(config, filename):
 def cli_check_ready(config, fileconfig):
     pass
 
+class CLIError(Exception):
+    """Exception class for general sync CLI errors"""
+
+    def __init__(self, message, *args):
+        progname = os.path.basename(sys.argv[0])
+        self.message = f"{progname}: {message}"
+
+        super(CLIError, self).__init__(message, *args)
+
+##
+## Top-level entrypoint.
+##
+## Sets up exception handlers then falls straight into click CLI handling.
+##
+
+def cli_entrypoint():
+    try:
+        csvsync_cli()
+    except CLIError as e:
+        eprint(e.message)
+        sys.exit(1)
+
 if __name__ == "__main__":
-    csvsync_cli()
+    cli_entrypoint()

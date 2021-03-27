@@ -16,7 +16,7 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     entry_points={
         'console_scripts': [
-            'csvsync = csvsync:csvsync_cli'
+            'csvsync = csvsync:cli.cli_entrypoint'
         ],
     },
     classifiers=(
