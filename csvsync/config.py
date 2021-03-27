@@ -42,7 +42,7 @@ class Config:
 
             if section == filename or self._matches(self.config[section]['filename'], filename):
                 logging.debug("Found config section " + section)
-                return FileConfig(self, self.config[section])
+                return FileConfig(self, self.config[section], section)
 
         raise KeyError
 
@@ -60,9 +60,10 @@ class Config:
         return os.path.normpath(fullpath)
 
 class FileConfig:
-    def __init__(self, config, section):
+    def __init__(self, config, section, section_name):
         self.config = config
         self.section = section
+        self.section_name = section_name
 
     def expand_config_filename(self, key):
 
