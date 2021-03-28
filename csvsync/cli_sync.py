@@ -31,7 +31,7 @@ def cli_sync(**args):
     sync = Sync(fileconfig)
 
     if continue_sync:
-        return do__sync_continue()
+        return do_sync_continue(sync)
 
     # Test things look OK before we start downloading data.  The
     # initial setup of the Sync class will have done basic validation
@@ -51,25 +51,31 @@ def cli_sync(**args):
 
     sync.state_change("READY", "PULL", command = "sync")
 
+    # Prepare files for merge:
+    # Download the remote file, and take a copy of the local file
+
     sync.download()
+    sync.copy_file("local", "local_copy")
 
     sync.state_change("PULL", "MERGE")
 
-    try:
-        # Create a 3-way merge
-        result = merge_files(sync)
+    # Create a 3-way merge
+    result = merge_files(sync)
 
-        sync.state_change("MERGE", "RESOLVE")
+    sync.state_change("MERGE", "RESOLVE")
 
-        if not result:
-            eprint("Warning: merge conflicts in %s" % sync.local_filename)
-            eprint("Fix conflicts then continue with csvsync sync --continue $file")
-            exit(1)
+    sync.copy_file("merge", "local")
 
-        merge_complete(sync)
+    if not result:
+        logging.debug("Conflicts found in merge")
 
-    finally:
-        sync.cleanup_download()
+        eprint(f"Warning: merge conflicts in {sync.local_filename}\n"
+               f"Fix conflicts then continue with\n"
+               f"  $ csvsync sync --continue {sync.fileconfig.section_name}")
+        exit(1)
+
+    logging.debug("No conflicts found in merge")
+    merge_complete(sync)
 
 def do_sync_continue(sync):
     merge_complete(sync)
@@ -81,9 +87,9 @@ def merge_files(sync):
 
     filename_LCA = sync.save_filename
 
-    # Branch A is the local working copy of the file
+    # Branch A is the csvsync copy of the local working file
 
-    filename_A = sync.local_filename
+    filename_A = sync.local_copy_filename
 
     # Branch B is the downloaded copy of the remote google sheet
 
@@ -99,6 +105,8 @@ def merge_files(sync):
     quote = sync.fileconfig['quote']
 
     eprint("Merging files...")
+    logging.debug("Running 3-way merge: "
+                  f"{filename_LCA}, {filename_A}, {filename_B} -> {filename_output}")
     with open(filename_LCA, 'rt') as file_LCA:
         with open(filename_A, 'rt') as file_A:
             with open(filename_B, 'rt') as file_B:
@@ -108,6 +116,7 @@ def merge_files(sync):
                                                     quote = quote,
                                                     output = file_output)
 
+    logging.debug(f"Merge completed with result {result}")
     # We return True (success) if the merge did NOT have a conflict
     return not result
 
@@ -120,8 +129,7 @@ def merge_complete(sync):
     # We can now save it as a SAVE file as LCA for the next 3-way
     # merge, and upload the results.
 
-    os.rename(sync.merge_filename, sync.save_filename)
-    shutil.copy(sync.save_filename, sync.local_filename)
+    sync.copy_file("local", "save")
 
     # If the download file still exists (ie. we didn't pause for a
     # manual conflict resolution), and the reconciled file is the

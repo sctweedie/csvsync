@@ -146,16 +146,10 @@ class Sync:
 
     def download(self):
         filename = self.download_filename
-        assert not os.path.exists(filename)
 
         pad_lines = self.fileconfig['pad_lines']
         eprint("Downloading...")
         self.gsheet.save_to_csv(filename, pad_lines)
-
-    def cleanup_download(self):
-        filename = self.download_filename
-
-        os.unlink(filename)
 
     def upload(self):
         filename = self.save_filename
