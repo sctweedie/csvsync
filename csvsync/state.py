@@ -164,6 +164,12 @@ class Sync:
         eprint("Uploading result...")
         self.gsheet.load_from_csv(filename)
 
+    def copy_file(self, file1, file2):
+        filename1 = getattr(self, file1 + "_filename")
+        filename2 = getattr(self, file2 + "_filename")
+        logging.debug(f"Copying file {filename1} to {filename2}")
+        shutil.copy(filename1, filename2)
+
     @property
     def gsheet(self):
         if not self.__gsheet:
