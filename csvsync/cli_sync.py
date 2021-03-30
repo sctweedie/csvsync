@@ -40,8 +40,8 @@ def cli_sync(**args):
 
     # Make sure we have a latest-common-ancestor to work with
 
-    if not os.path.exists(sync.save_filename):
-        eprint('Error: no saved copy (%s) exists for file' % sync.save_filename)
+    if not os.path.exists(sync.ancestor_filename):
+        eprint('Error: no saved copy (%s) exists for file' % sync.ancestor_filename)
         exit(1)
 
     # Make sure we're not already in the middle of a sync
@@ -85,7 +85,7 @@ def merge_files(sync):
     #
     # LCA (Latest Common Ancestor) is the local SAVE file
 
-    filename_LCA = sync.save_filename
+    filename_LCA = sync.ancestor_filename
 
     # Branch A is the csvsync copy of the local working file
 
@@ -129,14 +129,14 @@ def merge_complete(sync):
     # We can now save it as a SAVE file as LCA for the next 3-way
     # merge, and upload the results.
 
-    sync.copy_file("local", "save")
+    sync.copy_file("local", "ancestor")
 
     # If the download file still exists (ie. we didn't pause for a
     # manual conflict resolution), and the reconciled file is the
     # same as the download, then we don't need to re-upload.
 
     if os.path.exists(sync.download_filename) and \
-       filecmp.cmp(sync.download_filename, sync.save_filename,
+       filecmp.cmp(sync.download_filename, sync.ancestor_filename,
                    shallow = False):
         eprint('No changes pending against remote file, skipping re-upload')
     else:

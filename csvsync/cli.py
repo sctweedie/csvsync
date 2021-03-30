@@ -74,7 +74,7 @@ def cli_status(filename):
                        ("status_filename", "status"),
                        ("download_filename", "download"),
                        ("merge_filename", "merge"),
-                       ("save_filename", "saved (LCA)")]:
+                       ("ancestor_filename", "saved ancestor")]:
         filename = getattr(sync, attr)
         present = "(Present)" if os.path.exists(filename) else "(Not present)"
         logging.debug("  %s: %s %s" % (desc, filename, present))

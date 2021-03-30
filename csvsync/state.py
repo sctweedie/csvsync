@@ -62,7 +62,7 @@ class Sync:
 
         # Saved copy of the most recently known Latest Common Ancestor
         # (ie. latest successful merge)
-        self.save_filename = os.path.join(self.subdir, basename + '.SAVE')
+        self.ancestor_filename = os.path.join(self.subdir, basename + '.SAVE')
 
         self.status_config = configparser.ConfigParser()
 
@@ -152,7 +152,7 @@ class Sync:
         self.gsheet.save_to_csv(filename, pad_lines)
 
     def upload(self):
-        filename = self.save_filename
+        filename = self.ancestor_filename
         assert os.path.exists(filename)
 
         eprint("Uploading result...")
