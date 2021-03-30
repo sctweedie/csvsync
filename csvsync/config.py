@@ -9,6 +9,7 @@ class Config:
                         'credentials': 'credentials.json',
                         'syncdir': 'csvsync',
                         'quote': 'minimal',
+                        'lineterminator': 'native',
                         'pad_lines': True,
                         'debug': False})
         self.config = config

@@ -9,6 +9,8 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 import csv
 
+import csvdiff3
+
 # If modifying these scopes, delete the file token.pickle.
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 
@@ -85,8 +87,12 @@ class Sheet:
 
         max_len = max([len(row) for row in values])
 
+        quote = self.fileconfig["quote"]
+        lineterminator = self.fileconfig["lineterminator"]
+        options = csvdiff3.tools.Options(quote = quote, lineterminator = lineterminator)
+
         with open(filename, 'wt') as csvfile:
-            csvwriter = csv.writer(csvfile, lineterminator = os.linesep)
+            csvwriter = csv.writer(csvfile, **options.csv_kwargs())
             for row in values:
                 if pad_lines:
                     row += [''] * (max_len - len(row))

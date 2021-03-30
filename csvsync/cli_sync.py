@@ -103,6 +103,7 @@ def merge_files(sync):
 
     merge_key = sync.fileconfig['key']
     quote = sync.fileconfig['quote']
+    lineterminator = sync.fileconfig['lineterminator']
 
     eprint("Merging files...")
     logging.debug("Running 3-way merge: "
@@ -114,6 +115,7 @@ def merge_files(sync):
                     result = csvdiff3.merge3.merge3(file_LCA, file_A, file_B,
                                                     merge_key,
                                                     quote = quote,
+                                                    lineterminator = lineterminator,
                                                     output = file_output)
 
     logging.debug(f"Merge completed with result {result}")
