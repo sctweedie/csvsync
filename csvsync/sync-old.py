@@ -134,21 +134,6 @@ class OldSync:
         eprint("Uploading result...")
         self.gsheet.load_from_csv(filename)
 
-    def cli_pull(self):
-        status = self.status
-
-        if status != None and status != 'READY':
-            eprint('Error: sync already in progress (status is %s)' % status)
-            exit(1)
-
-        if os.path.exists(self.save_filename):
-            eprint('Error: saved copy (%s) already exists for file' % self.save_filename)
-            exit(1)
-
-        self.download()
-        os.rename(self.download_filename, self.save_filename)
-        shutil.copy(self.save_filename, self.local_filename)
-
     def cli_push(self):
         status = self.status
 

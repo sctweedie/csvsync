@@ -20,17 +20,6 @@ def csvsync_cli(debug):
 
     pass
 
-@csvsync_cli.command("pull")
-@click.argument("filename")
-
-def cli_pull(filename):
-    config = Config()
-    fileconfig = find_config(config, filename)
-
-    sync = Sync(fileconfig)
-
-    sync.cli_pull()
-
 @csvsync_cli.command("push")
 @click.argument("filename")
 

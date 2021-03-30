@@ -6,3 +6,4 @@ import csvsync.state
 import csvsync.lib
 import csvsync.cli
 import csvsync.cli_sync
+import csvsync.cli_pull
