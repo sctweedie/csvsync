@@ -9,7 +9,8 @@ class Config:
                         'credentials': 'credentials.json',
                         'syncdir': 'csvsync',
                         'quote': 'minimal',
-                        'pad_lines': True})
+                        'pad_lines': True,
+                        'debug': False})
         self.config = config
 
         config.read([os.path.expanduser('~/.csvsync.ini')])
@@ -29,7 +30,6 @@ class Config:
             if os.path.samefile(path, parent):
                 break
             path = parent
-
 
     def save(self):
         with open('csvsync.ini', 'wt') as file:

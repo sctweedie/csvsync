@@ -20,6 +20,17 @@ class Sync:
     def __init__(self, fileconfig):
         self.fileconfig = fileconfig
 
+        debug = fileconfig.section.getboolean("debug")
+        if debug:
+
+            # Need to enable logging here with force set.  We've
+            # already hit some possible log points by the time we find
+            # the appropriate config file here, and basicConfig will
+            # do nothing if we have already set up a default handler.
+
+            logging.basicConfig(filename = "DEBUG.log", level = logging.DEBUG, force = True)
+            logging.debug(f"Logging enabled on config {fileconfig.section_name}")
+
         # Perform some basic tests on the file config being used here.
         # We will propagate exceptions cleanly up to the CLI entry
         # point before getting too deep into the actual work.

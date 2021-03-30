@@ -17,6 +17,7 @@ import logging
 def csvsync_cli(debug):
     if debug:
         logging.basicConfig(filename = "DEBUG.log", level = logging.DEBUG)
+        logging.debug("Logging enabled on command line")
 
     pass
 
