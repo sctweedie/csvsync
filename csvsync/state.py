@@ -50,6 +50,7 @@ class Sync:
         # Temporary copy of the local file.
         # For 3-way merge, the local file will be updated with the contents of the merge, for the user
         # to edit in-place for conflict resolution
+        # For pull, it will preserve the previous copy of the local file.
         # The "local" copy here can be used to undo the merge and restore to the original contents.
         self.local_copy_filename = os.path.join(self.subdir, basename + '.LOCAL')
 
