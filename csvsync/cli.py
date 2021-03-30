@@ -1,6 +1,6 @@
 # Main CLI handling for the csvsync command.
 
-from . import config, gsheet, sync, lib
+from . import config, gsheet, state, lib
 from .config import Config
 from .state import Sync
 from .lib import *
